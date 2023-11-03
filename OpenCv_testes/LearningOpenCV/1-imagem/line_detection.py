@@ -1,0 +1,71 @@
+# Traca todas as linhas identificadas na imagem. Teste para deteccao de linhas
+import cv2
+import numpy as np
+
+# Reading the required image in
+# which operations are to be done.
+# Make sure that the image is in the same
+# directory in which this python program is
+imagePath = "/home/felipe/Hawkings/OpenCV/OpenCv_testes/LearningOpenCV/1-imagem/veneza.jpg" 
+# imagePath = "/home/felipe/Hawkings/OpenCV/OpenCv_testes/LearningOpenCV/1-imagem/tigre.jpg"
+img = cv2.imread(imagePath)
+
+# Convert the img to grayscale
+gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+# Apply edge detection method on the image
+edges = cv2.Canny(gray,50,150,apertureSize = 3)
+
+# This returns an array of r and theta values
+lines = cv2.HoughLines(edges,1,np.pi/180, 200)
+cv2.imshow("gray",gray)
+k = cv2.waitKey(0)
+# The below for loop runs till r and theta values
+# are in the range of the 2d array
+cR = 0
+cG = 0
+for c in range(0,len(lines)):
+	r_theta = lines[c][0]
+	print(r_theta)
+	r,theta = r_theta
+	# Stores the value of cos(theta) in a
+	a = np.cos(theta)
+
+	# Stores the value of sin(theta) in b
+	b = np.sin(theta)
+	
+	# x0 stores the value rcos(theta)
+	x0 = a*r
+	
+	# y0 stores the value rsin(theta)
+	y0 = b*r
+	
+	# x1 stores the rounded off value of (rcos(theta)-1000sin(theta))
+	x1 = int(x0 + 1000*(-b))
+	
+	# y1 stores the rounded off value of (rsin(theta)+1000cos(theta))
+	y1 = int(y0 + 1000*(a))
+
+	# x2 stores the rounded off value of (rcos(theta)+1000sin(theta))
+	x2 = int(x0 - 1000*(-b))
+	
+	# y2 stores the rounded off value of (rsin(theta)-1000cos(theta))
+	y2 = int(y0 - 1000*(a))
+	
+	# cv2.line draws a line in img from the point(x1,y1) to (x2,y2).
+	# (0,0,255) denotes the colour of the line to be
+	#drawn. In this case, it is red.
+	if(cR >255):
+		cR = 0
+	if(cG > 255):
+		cG = cG-255
+	cv2.line(img,(x1,y1), (x2,y2), (cR,cG,255),1)
+	cR+=1
+	cG+=2
+	
+# All the changes made in the input image are finally
+# written on a new image houghlines.jpg
+cv2.imwrite("linesDetected.jpg", img)
+
+cv2.imshow("Linhas Detectadas",img)
+k = cv2.waitKey(0)
